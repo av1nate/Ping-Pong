@@ -11,13 +11,17 @@ FPS = 120
 
 mw = display.set_mode((bx,by))
 
-bc = transform.scale(image.load('i (1).png'),(bx,by))
+bc = transform.scale(image.load('i(1).png'),(bx,by))
+
+font.init()
+font1 = font.SysFont('Arial',25)
 
 class GmSp(sprite.Sprite):
-    def __init__(self, pimage, px, py, pw, ph, pspeed):
+    def __init__(self, pimage, px, py, pw, ph, pxspeed, pyspeed):
         super().__init__()
         self.image = transform.scale(image.load(pimage), (pw,ph))
-        self.pspeed = pspeed
+        self.pxspeed = pxspeed
+        self.pyspeed = pyspeed
         self.rect = self.image.get_rect()
         self.rect.x = px
         self.rect.y = py
@@ -30,42 +34,75 @@ class Play(GmSp):
         global gy
         nk = key.get_pressed()
         if nk[K_w] and self.rect.y > 0:
-            self.rect.y -= self.pspeed
+            self.rect.y -= self.pxspeed
         if nk[K_s] and self.rect.y < 300:
-            self.rect.y += self.pspeed
+            self.rect.y += self.pxspeed
     def update2(self ):
         global gx
         global gy
         nk = key.get_pressed()
         if nk[K_UP] and self.rect.y > 0:
-            self.rect.y -= self.pspeed
+            self.rect.y -= self.pxspeed
         if nk[K_DOWN] and self.rect.y < 300:
-            self.rect.y += self.pspeed
+            self.rect.y += self.pxspeed
 
-# class Ball(GmSp):
-#     def update(self):
+class Ball(GmSp):
+    def update(self):
+        self.rect.x += self.pxspeed
+        self.rect.y += self.pyspeed
+        if self.rect.y <= 0:
+            self.pyspeed *= -1
+        if self.rect.y >= 350:
+            self.pyspeed *= -1
 
         
 
-p1 = Play('1625.png',-20,150,100,100,3)
-p2 = Play('1625.png',320,150,100,100,3)
+p1 = Play('1625.png',10,30,20,100,3,0)
+p2 = Play('1625.png',370,270,20,100,3,0)
 
-
+b1 = Ball('ball1.png',175,175,50,50,1,1)
 
 gm = True
+f = False
 
 while gm == True:
 
     mw.blit(bc,(0,0))
     p1.reset()
     p2.reset()
+    b1.reset()
 
-    p1.update1()
-    p2.update2()
+
+
+    if f != True:
+        p1.update1()
+        p2.update2()
+        b1.update() 
+
+        p1t = font1.render('Player 2', True, (145,255,0))
+        mw.blit(p1t,(300,10))
+        p1t = font1.render('Player 1', True, (145,255,0))
+        mw.blit(p1t,(10,365))
+
+        if sprite.collide_rect(b1,p1):
+            b1.pxspeed *= -1
+        if sprite.collide_rect(b1,p2):
+            b1.pxspeed *= -1
+
+    if b1.rect.x >= 350:
+        f = True
+        p1w = font1.render('Player 1 win', True, (255,145,0))
+        mw.blit(p1w,(150,175))
+    if b1.rect.x <= 0:
+        f = True
+        p2w = font1.render('Player 2 win', True, (255,145,0))
+        mw.blit(p2w,(150,175))        
 
     for i in event.get():
         if i.type == QUIT:
             gm =  False  
+
+        
 
     display.update()
     clock.tick(FPS)
